@@ -1,0 +1,15 @@
+Author: UserHater
+java version: [$javaVersion]
+javafx.version: [$javafxVersion]
+Change Log:
+----------[version 0.7]----------
+Article, Supplier, Order tabs are fully functioning
+All project was moved to MAVEN
+Resizable form !
+METI article recognising for 001 Store 
+----------[version 0.8]----------
+SQL moved out to external folder 
+Changed font in .css to "Euphemia"
+----------[version 0.9]----------
+GIMA order search Config changes
+Cancel the search by Esc key function

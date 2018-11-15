@@ -1,0 +1,36 @@
+
+.tab-pane *.tab-header-area *.tab-header-background {
+    -fx-background-color: #1d1d1d;
+
+}
+
+.tab-pane {
+    -fx-tab-min-width:20px;
+    -fx-tab-max-width:150px;
+    -fx-tab-min-height:20px;
+    -fx-tab-max-height:20px;
+}
+
+.tab .tab-label {
+    -fx-font-family: "Segoe UI Light";
+    -fx-alignment: CENTER;
+    -fx-text-fill: #d8d8d8;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.tab {
+    -fx-font-size: 12px;
+    -fx-background-color: #1d1d1d;
+}
+
+.tab:selected {
+    -fx-background-color:  dodgerblue;
+}
+.split-pane {
+    -fx-background-color: #1d1d1d;
+}
+.tool-bar {
+    -fx-background-color: #1d1d1d;
+
+}
