@@ -13,3 +13,6 @@ Changed font in .css to "Euphemia"
 ----------[version 0.9]----------
 GIMA order search Config changes
 Cancel the search by Esc key function
+
+Good Log4J information
+https://stackoverflow.com/a/46368163/10299636
