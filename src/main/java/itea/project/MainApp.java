@@ -13,10 +13,11 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
 import java.net.URL;
+import java.sql.Connection;
 
 public class MainApp extends Application
 {
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private Ini4J ini;
 
     @Override
@@ -34,9 +35,9 @@ public class MainApp extends Application
 //        primaryStage.setResizable(true);
 //        primaryStage.show();
 
-//        Class.forName(ini.getParam("CONNECTION","StoreDriver"));
 
-        log.info("Info");
+
+        LOGGER.info("Info");
         Platform.exit();
 
     }
