@@ -1,6 +1,5 @@
 package itea.project.utils;
 
-import itea.project.MainApp;
 import javafx.application.Platform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,19 +9,15 @@ import org.ini4j.Profile;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static itea.project.utils.FxUtils.alertError;
+import static itea.project.MainApp.LOGGER;
 
 //realizes the Singleton pattern
 public class Ini4J {
 
-    private static final Logger LOGGER = LogManager.getLogger();
     private Ini ini;
     private static Ini4J ini4J;
     private final String iniFileName = "Config.ini";

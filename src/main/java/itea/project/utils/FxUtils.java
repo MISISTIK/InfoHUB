@@ -11,11 +11,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import static itea.project.MainApp.LOGGER;
 
 public class FxUtils {
-    private static final Logger LOGGER = LogManager.getLogger();
 
-    private static String getStackTrace(Exception e) {
+    public static String getStackTrace(Exception e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
