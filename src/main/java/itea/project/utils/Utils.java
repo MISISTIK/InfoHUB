@@ -29,7 +29,7 @@ public class Utils {
 
     public static void checkSQLFolder() {
         try {
-            File sql_dir_res = new File(MainApp.class.getClassLoader().getResource("SQL").toURI());
+            File sql_dir_res = new File(MainApp.class.getClassLoader().getResource("SQL_res").toURI());
             Path sql_dir_local = Paths.get("SQL");
             if (sql_dir_res.exists() && sql_dir_res.isDirectory()) {
                 if (!Files.exists(sql_dir_local) || !Files.isDirectory(sql_dir_local)) {

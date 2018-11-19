@@ -42,11 +42,15 @@ public class MainApp extends Application {
         checkSQLFolder();
         try {
 
+            String file_str = "file://";
+            if (System.getProperty("os.name").contains("Windows")) {
+                file_str += "/";
+            }
             //for dev use
             if (isDev) {
-                loadRootLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/root.fxml"));
-                loadArticleLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/article.fxml"));
-                loadSupplierLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/supplier.fxml"));
+                loadRootLayout(new URL( file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/root.fxml"));
+                loadArticleLayout(new URL(file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/article.fxml"));
+                loadSupplierLayout(new URL(file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/supplier.fxml"));
             } else {
                 loadRootLayout(getClass().getResource("/view/root.fxml"));
                 loadArticleLayout(getClass().getResource("/view/article.fxml"));
