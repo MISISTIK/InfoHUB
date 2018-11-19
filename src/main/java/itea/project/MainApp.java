@@ -149,7 +149,7 @@ public class MainApp extends Application {
         LOGGER.info("=================== PROGRAM START ===================");
         this.primaryStage = primaryStage;
         //TODO change this for prod
-        boolean dev = true;
+        boolean dev = false;
         initLayout(dev);
         setLayout(articleLayout,articleController);
     }

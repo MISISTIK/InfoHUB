@@ -61,6 +61,16 @@
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <!-- required before build-web -->
+                        <id>create-jfxjar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
