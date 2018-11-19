@@ -25,7 +25,7 @@ import static itea.project.utils.FxUtils.getStackTrace;
 import static itea.project.utils.Utils.checkSQLFolder;
 
 public class MainApp extends Application {
-    public static final Logger LOGGER = LogManager.getLogger();
+    public static Logger LOGGER = LogManager.getLogger();
     public static volatile boolean isAppInit;
     private BorderPane root = null;
     private AnchorPane articleLayout = null;
