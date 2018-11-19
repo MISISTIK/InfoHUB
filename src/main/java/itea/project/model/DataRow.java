@@ -13,6 +13,10 @@ public class DataRow {
         return data_array[i];
     }
 
+    public int size() {
+        return data_array.length;
+    }
+
     public DataRow(Object... objs) {
         data_array = new Object[objs.length];
         for (int i = 0; i < objs.length; i++) {

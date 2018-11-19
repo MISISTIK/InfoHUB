@@ -2,4 +2,6 @@
 *.iml
 /target
 Config.ini
+*.xlsx
+*logs*
 SQL/

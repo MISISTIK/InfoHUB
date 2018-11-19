@@ -3,6 +3,7 @@ package itea.project;
 import itea.project.controllers.ArticleController;
 import itea.project.controllers.Controller;
 import itea.project.controllers.RootController;
+import itea.project.controllers.SupplierController;
 import itea.project.utils.Ini4J;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -25,37 +26,47 @@ import static itea.project.utils.Utils.checkSQLFolder;
 
 public class MainApp extends Application {
     public static final Logger LOGGER = LogManager.getLogger();
+    public static volatile boolean isAppInit;
     private BorderPane root = null;
     private AnchorPane articleLayout = null;
+    private AnchorPane supplierLayout = null;
     private ArticleController articleController = null;
+    private SupplierController supplierController = null;
 
-    private Stage primaryStage;
+    public Stage primaryStage;
     private Ini4J ini;
 
     private void initLayout(boolean isDev) {
         ini = Ini4J.getInstance();
+        isAppInit = true;
         checkSQLFolder();
         try {
 
+
             //for dev use
             if (isDev) {
-                loadRootLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/root.fxml"));
-                loadArticleLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/article.fxml"));
+                String file_str = "file://" + (System.getProperty("os.name").contains("Windows") ? "/" : "");
+                loadRootLayout(new URL(file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/root.fxml"));
+                loadArticleLayout(new URL(file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/article.fxml"));
+                loadSupplierLayout(new URL(file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/supplier.fxml"));
             } else {
                 loadRootLayout(getClass().getResource("/view/root.fxml"));
                 loadArticleLayout(getClass().getResource("/view/article.fxml"));
+                loadSupplierLayout(getClass().getResource("/view/supplier.fxml"));
             }
 
             final int wVal = 10;
             primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {
                 root.setPrefWidth(primaryStage.getWidth() - wVal);
                 articleLayout.setPrefWidth(primaryStage.getWidth() - wVal);
+                supplierLayout.setPrefWidth(primaryStage.getWidth() - wVal);
 
             });
             final int hVal = 85;
             primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> {
                 root.setPrefHeight(primaryStage.getHeight() - hVal);
                 articleLayout.setPrefHeight(primaryStage.getHeight() - hVal);
+                supplierLayout.setPrefHeight(primaryStage.getHeight() - hVal);
 
             });
 
@@ -78,12 +89,24 @@ public class MainApp extends Application {
                 LOGGER.info("==================== PROGRAM END ====================");
                 ini.setParam("ROOT", "PrefWidth", String.valueOf(primaryStage.getWidth()).replace(".0", ""));
                 ini.setParam("ROOT", "PrefHeight", String.valueOf(primaryStage.getHeight()).replace(".0", ""));
+                isAppInit = false;
             });
         } catch (Exception e) {
             LOGGER.error(getStackTrace(e));
             Platform.exit();
         }
     }
+
+    public void setArticleLayout() {
+        root.setCenter(articleLayout);
+        articleController.setFocus();
+    }
+
+    public void setSupplierLayout() {
+        root.setCenter(supplierLayout);
+        supplierController.setFocus();
+    }
+
 
     private void loadArticleLayout(URL path) throws IOException {
         WeakReference<FXMLLoader> loader = new WeakReference<>(new FXMLLoader());
@@ -92,8 +115,17 @@ public class MainApp extends Application {
         articleController = loader.get().getController();
         articleController.setMainApp(this);
         loader.clear();
-
     }
+
+    private void loadSupplierLayout(URL path) throws IOException {
+        WeakReference<FXMLLoader> loader = new WeakReference<>(new FXMLLoader());
+        loader.get().setLocation(path);
+        supplierLayout = loader.get().load();
+        supplierController = loader.get().getController();
+        supplierController.setMainApp(this);
+        loader.clear();
+    }
+
 
     private void loadRootLayout(URL path) throws IOException {
         WeakReference<FXMLLoader> loader = new WeakReference<>(new FXMLLoader());
@@ -115,7 +147,7 @@ public class MainApp extends Application {
         LOGGER.info("=================== PROGRAM START ===================");
         this.primaryStage = primaryStage;
         //TODO change this for prod
-        boolean dev = true;
+        boolean dev = false;
         initLayout(dev);
         setLayout(articleLayout,articleController);
     }

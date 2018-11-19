@@ -10,6 +10,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.stage.FileChooser;
 
+import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -17,31 +18,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import static itea.project.utils.FxUtils.alertError;
 import static itea.project.utils.FxUtils.alertInfo;
 import static itea.project.utils.Utils.getSQLFromFile;
-import static itea.project.utils.Utils.getStoreList;
 import static itea.project.utils.Utils.save2Excel;
 
 
-public class ArticleController extends Controller {
+public class SupplierController extends Controller {
 
     @FXML
     private Button export2ExcelButton;
 
     @FXML
-    private Button btn;
+    private Button suppBtn;
 
     @FXML
     private TableView<DataRow> table;
 
     @FXML
-    private TabPane tabPane;
-
-    @FXML
-    private TextField inputField;
+    private TextField suppInputField;
 
     @FXML
     private ProgressIndicator progressIndicator;
@@ -49,24 +45,27 @@ public class ArticleController extends Controller {
     @FXML
     private Label timeLabel;
 
+    @FXML
+    private TabPane tabPane;
+
+
     private Ini4J ini;
     private Semaphore semaphore = new Semaphore(1);
 
     @FXML
     private void initialize() {
         ini = Ini4J.getInstance();
-        TableData tdInfo = new TableData("id", "SEGMENT", "ART_NUM", "ART_NAME", "ART_SUPPLIER", "STATUS");
-        TableData tdPrice = new TableData("STORE_NUM", "id", "ART_NUM", "ART_PURCH_PRICE", "ART_PRICE");
-        TableData tdSupplier = new TableData("id","SUPPLIER_NUM","SUPPLIER_NAME","EMAIL","PHONE","STATUS","EDRPOU","GLN");
+        TableData tdInfo = new TableData("id","SUPPLIER_NUM","SUPPLIER_NAME","EMAIL","PHONE","STATUS","EDRPOU","GLN");
+        TableData tdArticle = new TableData("ART_SUPPLIER","id","SEGMENT","ART_NUM","ART_NAME","STATUS");
         setCurrentTable(tdInfo);
 
-        inputField.setOnKeyPressed(event -> {
+        suppInputField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER)
             {
-                btn.fire();
+                suppBtn.fire();
                 event.consume();
             }
-            inputField.setStyle("-fx-control-inner-background: white");
+            suppInputField.setStyle("-fx-control-inner-background: white");
         });
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((ov, t, t1) -> {
@@ -76,11 +75,7 @@ public class ArticleController extends Controller {
                     break;
                 }
                 case 1: {
-                    setCurrentTable(tdPrice);
-                    break;
-                }
-                case 2: {
-                    setCurrentTable(tdSupplier);
+                    setCurrentTable(tdArticle);
                     break;
                 }
                 default: {
@@ -92,11 +87,11 @@ public class ArticleController extends Controller {
         export2ExcelButton.setOnAction((event) -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save to Excel");
-            fileChooser.setInitialFileName("Article.xlsx");
+            fileChooser.setInitialFileName("Supplier.xlsx");
             fileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter("Excel", "*.xlsx"),
             new FileChooser.ExtensionFilter("All Files", "*.*"));
-            fileChooser.setInitialDirectory(javax.swing.filechooser.FileSystemView.getFileSystemView().getHomeDirectory());
+            fileChooser.setInitialDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
             try {
 
                 File file_xls = fileChooser.showSaveDialog(null);
@@ -108,51 +103,38 @@ public class ArticleController extends Controller {
                         file_xls = new File(file_xls.getParent() + "/" + filename);
                     }
                     Map<String, List<DataRow>> excelMap = new HashMap<>();
-                    excelMap.put("Supplier", tdSupplier.getDataForExcel());
-                    excelMap.put("Prices", tdPrice.getDataForExcel());
+                    excelMap.put("SupplierArticles", tdArticle.getDataForExcel());
                     excelMap.put("Info", tdInfo.getDataForExcel());
 
-                    if (save2Excel(file_xls.getAbsolutePath(), excelMap)) {
-                        alertInfo("File \"" + filename + "\" successfully created", "Congrats !");
-                    }
+                    save2Excel(file_xls.getAbsolutePath(), excelMap);
 
-
+                    alertInfo("File \"" + filename + "\" successfully created", "Congrats !");
                 }
             } catch (Exception e) {
                 alertError(e);
             }
         });
 
-        btn.setOnAction((event) -> {
+        suppBtn.setOnAction((event) -> {
             try {
                 tdInfo.clear();
-                tdPrice.clear();
-                tdSupplier.clear();
-                String art_str = inputField.getText();
-                if (art_str.matches("[\\d]+")) {
-                    String[] stores = getStoreList();
+                tdArticle.clear();
+                String supp_str = suppInputField.getText();
+                if (supp_str.matches("[\\d]+")) {
 
                     String StoreUrl = ini.getParam("CONNECTIONS", "StoreUrl");
                     List<SQLThread> threadPool = new ArrayList<>();
-                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("ArticleInfo.sql"), art_str),
-                            StoreUrl, tdInfo,semaphore , "ArtInfo_Thread"));
+                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierInfo_supp.sql"), supp_str),
+                            StoreUrl, tdInfo, semaphore, "SupplierInfo_Thread"));
 
-                    for (String s : stores) {
-                        threadPool.add(new SQLThread(
-                                MessageFormat.format(getSQLFromFile("PriceInfo.sql"), art_str, s),
-                                StoreUrl, tdPrice, semaphore, "PriceInfo_Thread_" + s
-                        ));
-                    }
-
-                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierInfo.sql"), art_str),
-                            StoreUrl, tdSupplier, semaphore, "SuppliersInfo_Thread"));
-
+                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierArts.sql"), supp_str),
+                            StoreUrl, tdArticle, semaphore,"SupplierArts_Thread"));
 
                     new Thread(() -> {
                         long startTime = System.currentTimeMillis();
                         Platform.runLater(() -> {
                             timeLabel.setText("");
-                            btn.setDisable(true);
+                            suppBtn.setDisable(true);
                             export2ExcelButton.setDisable(true);
                             progressIndicator.setVisible(true);
                         });
@@ -169,26 +151,24 @@ public class ArticleController extends Controller {
                             }
                         }
                         Platform.runLater(() -> {
-                            inputField.setStyle("-fx-control-inner-background: lime");
+                            suppInputField.setStyle("-fx-control-inner-background: lime");
                             if (tdInfo.getTableData().size() == 0) {
-                                inputField.setStyle("-fx-control-inner-background: yellow");
+                                suppInputField.setStyle("-fx-control-inner-background: yellow");
                             }
                             long stopTime = System.currentTimeMillis();
                             long elapsedTime = stopTime - startTime;
                             timeLabel.setText((String.format("%.2f sec", elapsedTime / 1000.0)));
-                            btn.setDisable(false);
+                            suppBtn.setDisable(false);
                             export2ExcelButton.setDisable(false);
                             progressIndicator.setVisible(false);
                         });
                     }).start();
-
-                    tabPane.getSelectionModel().select(tabPane.getSelectionModel().getSelectedItem());
                 } else {
-                    Platform.runLater(() -> inputField.setStyle("-fx-control-inner-background: red"));
+                    Platform.runLater(() -> suppInputField.setStyle("-fx-control-inner-background: red"));
                 }
                 Platform.runLater(() -> {
-                    inputField.setText(art_str);
-                    inputField.selectAll();
+                    suppInputField.setText(supp_str);
+                    suppInputField.selectAll();
                 });
             } catch (Exception e) {
                 alertError(e);
@@ -203,7 +183,7 @@ public class ArticleController extends Controller {
 
     @Override
     public void setFocus() {
-        Platform.runLater(() -> inputField.requestFocus());
+        Platform.runLater(() -> suppInputField.requestFocus());
     }
 
 
