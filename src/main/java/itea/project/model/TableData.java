@@ -6,6 +6,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+import javax.xml.crypto.Data;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +51,14 @@ public class TableData {
         }
 
     }
+
+    public List<DataRow> getDataForExcel() {
+        WeakReference<List<DataRow>> resList = new WeakReference<>(new ArrayList<>());
+        resList.get().add(new DataRow(headers));
+        resList.get().addAll(dataList);
+        return resList.get();
+    }
+
 
     public void clear() {
         dataList.clear();

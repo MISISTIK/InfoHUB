@@ -56,7 +56,7 @@
 }
 
 .table-view .column-header .label {
-    -fx-font-size: 13pt; /* table */
+    -fx-font-size: 10pt; /* table */
     -fx-font-family: "Segoe UI Light";
     -fx-text-fill: white;
     -fx-alignment: center-left;

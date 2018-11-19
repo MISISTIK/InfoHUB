@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static itea.project.MainApp.LOGGER;
+import static itea.project.MainApp.isAppInit;
 
 public class FxUtils {
 
@@ -26,7 +27,7 @@ public class FxUtils {
 
     public static synchronized void alertError(Exception e) {
         LOGGER.error(getStackTrace(e));
-        if (Platform.isAccessibilityActive()) {
+        if (isAppInit) {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Error alert");
             alert.setHeaderText(e.getMessage());

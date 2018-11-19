@@ -25,6 +25,7 @@ import static itea.project.utils.Utils.checkSQLFolder;
 
 public class MainApp extends Application {
     public static final Logger LOGGER = LogManager.getLogger();
+    public static volatile boolean isAppInit;
     private BorderPane root = null;
     private AnchorPane articleLayout = null;
     private ArticleController articleController = null;
@@ -34,6 +35,7 @@ public class MainApp extends Application {
 
     private void initLayout(boolean isDev) {
         ini = Ini4J.getInstance();
+        isAppInit = true;
         checkSQLFolder();
         try {
 
@@ -78,6 +80,7 @@ public class MainApp extends Application {
                 LOGGER.info("==================== PROGRAM END ====================");
                 ini.setParam("ROOT", "PrefWidth", String.valueOf(primaryStage.getWidth()).replace(".0", ""));
                 ini.setParam("ROOT", "PrefHeight", String.valueOf(primaryStage.getHeight()).replace(".0", ""));
+                isAppInit = false;
             });
         } catch (Exception e) {
             LOGGER.error(getStackTrace(e));
