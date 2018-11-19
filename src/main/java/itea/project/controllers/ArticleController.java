@@ -13,6 +13,7 @@ import javafx.scene.layout.BorderPane;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import static itea.project.utils.Utils.getSQLFromFile;
 import static itea.project.utils.Utils.getStoreList;
@@ -38,6 +39,7 @@ public class ArticleController extends Controller {
     private Label timeLabel;
 
     private Ini4J ini;
+    private Semaphore semaphore = new Semaphore(1);
 
 
     @FXML
@@ -81,17 +83,17 @@ public class ArticleController extends Controller {
                 String StoreUrl = ini.getParam("CONNECTIONS", "StoreUrl");
                 List<SQLThread> threadPool = new ArrayList<>();
                 threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("ArticleInfo.sql"), art_str),
-                        StoreUrl, tdInfo, "ArtInfo_Thread"));
+                        StoreUrl, tdInfo, semaphore, "ArtInfo_Thread"));
 
                 for (String s : stores) {
                     threadPool.add(new SQLThread(
                             MessageFormat.format(getSQLFromFile("PriceInfo.sql"), art_str, s),
-                            StoreUrl, tdPrice, "PriceInfo_Thread_" + s
+                            StoreUrl, tdPrice, semaphore,"PriceInfo_Thread_" + s
                     ));
                 }
 
                 threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierInfo.sql"), art_str),
-                        StoreUrl, tdSuppliers, "SuppliersInfo_Thread"));
+                        StoreUrl, tdSuppliers, semaphore,"SuppliersInfo_Thread"));
 
 
                 new Thread(() -> {

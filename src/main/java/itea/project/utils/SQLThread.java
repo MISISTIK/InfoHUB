@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import static itea.project.utils.FxUtils.alertError;
@@ -25,18 +26,20 @@ public class SQLThread implements Runnable {
     private ResultSet res;
     private TableData tableData;
     private Ini4J ini;
+    private Semaphore semaphore;
 
-    public SQLThread(String SQL, String url, TableData td) {
+    public SQLThread(String SQL, String url, TableData td, Semaphore semaphore) {
         this.SQL = SQL;
         this.url = url;
         this.tableData = td;
         this.thisThread = new Thread(this);
+        this.semaphore = semaphore;
         result = new ArrayList<>();
         ini = Ini4J.getInstance();
     }
 
-    public SQLThread(String SQL, String url, TableData td, String threadName) {
-        this(SQL, url, td);
+    public SQLThread(String SQL, String url, TableData td, Semaphore semaphore, String threadName) {
+        this(SQL, url, td, semaphore);
         this.thisThread.setName(threadName);
     }
 
@@ -56,7 +59,7 @@ public class SQLThread implements Runnable {
                         headers[i] = rsmd.getColumnName(i + 1);
                     }
                     //This imitates the real life DB delay
-                    if (Boolean.parseBoolean(ini.getParam("ROOT","UseDelay"))) {
+                    if (Boolean.parseBoolean(ini.getParam("ROOT", "UseDelay"))) {
                         TimeUnit.SECONDS.sleep((int) (Math.random() * Integer.parseInt(ini.getParam("ROOT", "maxDelay"))) + Integer.parseInt(ini.getParam("ROOT", "minDelay")));
                     }
                     do {
@@ -67,8 +70,10 @@ public class SQLThread implements Runnable {
                         result.add(new DataRow(d_array));
                     } while (res.next());
                     System.out.println("[" + thisThread.getName() + "] " + "ResultSet -> DataRow DONE");
+                    semaphore.acquire();
                     tableData.setHeaders(headers);
                     tableData.addList(result);
+                    semaphore.release();
                 } else {
                     LOGGER.warn("ResultSet of " + thisThread.getName() + " is empty");
                 }
