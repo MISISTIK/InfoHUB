@@ -1,16 +1,17 @@
 package itea.project.utils;
 
+import com.sun.javafx.scene.control.skin.TableViewSkin;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
+import javafx.collections.ListChangeListener;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import static itea.project.MainApp.LOGGER;
 
 public class FxUtils {

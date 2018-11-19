@@ -7,6 +7,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -15,32 +16,49 @@ import static itea.project.utils.FxUtils.alertError;
 public class TableData {
 
     private Semaphore semaphore = new Semaphore(1);
-    private TableView<DataRow> table;
+    private TableView<DataRow> table = new TableView<>();
 
     private ObservableList<DataRow> dataList = FXCollections.observableArrayList();
-    private List<String> headers;
+    private String[] headers;
 
-    public TableData(TableView<DataRow> tableView) {
-        this.table = tableView;
+    public TableData() {
         table.setItems(dataList);
-
     }
 
-    public void setHeaders(List<String> headers) {
+    public TableData(String ... headers) {
+        this();
+        this.setHeaders(headers);
+    }
+
+    public void setHeaders(String ... headers) {
         if (table != null) {
-            this.headers = new ArrayList<>(headers);
-            for (int i = 0; i < headers.size(); i++) {
-                TableColumn<DataRow, String> col = new TableColumn<>(headers.get(i));
-                int finalI = i;
-                col.setCellValueFactory(cellData -> {
-                    DataRow d = cellData.getValue();
-                    return new ReadOnlyObjectWrapper<>(d.get(finalI)).asString();
-                });
-                table.getColumns().add(col);
+            if (!Arrays.equals(this.headers, headers)) {
+                this.headers = headers;
+                for (int i = 0; i < headers.length; i++) {
+                    TableColumn<DataRow, String> col = new TableColumn<>(headers[i]);
+                    int finalI = i;
+                    col.setCellValueFactory(cellData -> {
+                        DataRow d = cellData.getValue();
+                        return new ReadOnlyObjectWrapper<>(d.get(finalI)).asString();
+                    });
+                    table.getColumns().add(col);
+                }
             }
         } else {
             alertError(new Exception("Cannot set headers until the table instance is not set or table is empty"));
         }
+
+    }
+
+    public void clear() {
+        dataList.clear();
+    }
+
+    public ObservableList<DataRow> getTableData() {
+        return dataList;
+    }
+    public ObservableList<TableColumn<DataRow,?>> getTableColumns() {
+        return table.getColumns();
 
     }
 

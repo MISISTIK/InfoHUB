@@ -3,7 +3,6 @@ package itea.project;
 import itea.project.controllers.ArticleController;
 import itea.project.controllers.Controller;
 import itea.project.controllers.RootController;
-import itea.project.controllers.SupplierController;
 import itea.project.utils.Ini4J;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -12,7 +11,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
@@ -20,35 +18,31 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
 import java.net.URL;
 
-import static itea.project.utils.FxUtils.alertError;
 import static itea.project.utils.FxUtils.getStackTrace;
+import static itea.project.utils.Utils.checkSQLFolder;
 
 public class MainApp extends Application {
     public static final Logger LOGGER = LogManager.getLogger();
     private BorderPane root = null;
     private AnchorPane articleLayout = null;
-    private AnchorPane supplierLayout = null;
     private ArticleController articleController = null;
-    private SupplierController supplierController = null;
 
     private Stage primaryStage;
     private Ini4J ini;
 
-    public void initLayout(boolean isDev) {
+    private void initLayout(boolean isDev) {
         ini = Ini4J.getInstance();
+        checkSQLFolder();
         try {
 
             //for dev use
             if (isDev) {
                 loadRootLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/root.fxml"));
                 loadArticleLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/article.fxml"));
-                loadSupplierLayout(new URL("file://" + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/supplier.fxml"));
             } else {
                 loadRootLayout(getClass().getResource("/view/root.fxml"));
-                loadArticleLayout(getClass().getResource("/view/article.fxml"));
                 loadArticleLayout(getClass().getResource("/view/article.fxml"));
             }
 
@@ -56,14 +50,12 @@ public class MainApp extends Application {
             primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {
                 root.setPrefWidth(primaryStage.getWidth() - wVal);
                 articleLayout.setPrefWidth(primaryStage.getWidth() - wVal);
-                supplierLayout.setPrefWidth(primaryStage.getWidth() - wVal);
 
             });
             final int hVal = 85;
             primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> {
                 root.setPrefHeight(primaryStage.getHeight() - hVal);
                 articleLayout.setPrefHeight(primaryStage.getHeight() - hVal);
-                supplierLayout.setPrefHeight(primaryStage.getHeight() - hVal);
 
             });
 
@@ -101,15 +93,6 @@ public class MainApp extends Application {
         articleController.setMainApp(this);
         loader.clear();
 
-    }
-
-    private void loadSupplierLayout(URL path) throws IOException {
-        WeakReference<FXMLLoader> loader = new WeakReference<>(new FXMLLoader());
-        loader.get().setLocation(path);
-        supplierLayout = loader.get().load();
-        supplierController = loader.get().getController();
-        supplierController.setMainApp(this);
-        loader.clear();
     }
 
     private void loadRootLayout(URL path) throws IOException {
