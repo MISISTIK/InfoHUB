@@ -9,14 +9,12 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static itea.project.MainApp.LOGGER;
 import static itea.project.utils.FxUtils.alertError;
@@ -157,6 +155,17 @@ public class Utils {
                     alertError(e);
                 }
             }
+        }
+    }
+
+    public static List<String> getResFileAsList(String path) {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+             BufferedReader out = new BufferedReader(new InputStreamReader(in))
+        ) {
+            return out.lines().collect(Collectors.toList());
+        } catch (IOException e) {
+            alertError(e);
+            return Collections.emptyList();
         }
     }
 }

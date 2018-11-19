@@ -5,6 +5,8 @@ import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.io.PrintWriter;
@@ -25,6 +27,21 @@ public class FxUtils {
         return s;
     }
 
+    public static synchronized void alertInfo(String ... info) {
+        if (isAppInit) {
+            if (info != null && info.length != 0) {
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("InfoHUB");
+                alert.setContentText(info[0]);
+                if (info.length > 1) {
+                    alert.setHeaderText(info[1]);
+                }
+                alert.showAndWait();
+            }
+        } else
+            LOGGER.error("The FX Applications was not initialized");
+    }
+
     public static synchronized void alertError(Exception e) {
         LOGGER.error(getStackTrace(e));
         if (isAppInit) {
@@ -38,6 +55,7 @@ public class FxUtils {
 
             TextArea textArea = new TextArea();
             textArea.setText(getStackTrace(e));
+
 
             dialogPaneContent.getChildren().addAll(label, textArea);
             alert.getDialogPane().setContent(dialogPaneContent);

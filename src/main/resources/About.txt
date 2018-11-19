@@ -1,3 +1,4 @@
+-------- InfoHUB v1.1 ---------
 Author: NoNameDev
 java version: [$javaVersion]
 javafx.version: [$javafxVersion]

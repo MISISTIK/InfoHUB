@@ -1,5 +1,6 @@
 package itea.project.model;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,6 +11,7 @@ import javax.xml.crypto.Data;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -35,6 +37,7 @@ public class TableData {
     public void setHeaders(String ... headers) {
         if (table != null) {
             if (!Arrays.equals(this.headers, headers)) {
+                table.getColumns().setAll(Collections.emptyList());
                 this.headers = headers;
                 for (int i = 0; i < headers.length; i++) {
                     TableColumn<DataRow, String> col = new TableColumn<>(headers[i]);

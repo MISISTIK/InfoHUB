@@ -3,7 +3,7 @@ package itea.project.controllers;
 import itea.project.MainApp;
 
 public class Controller {
-    private MainApp mainApp;
+    protected MainApp mainApp;
 
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;

@@ -10,7 +10,7 @@
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane fx:id="bp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="900.0" styleClass="background" stylesheets="@../../../../resources/css/DarkTheme.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="itea.project.controllers.RootController">
+<BorderPane fx:id="bp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="900.0" styleClass="background" stylesheets="@../../../../resources/css/DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="itea.project.controllers.RootController">
    <top>
       <ToolBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <items>
@@ -18,18 +18,20 @@
               <menus>
                   <Menu fx:id="mainMenu" mnemonicParsing="false">
                     <items>
-                      <MenuItem mnemonicParsing="false" text="About" />
+                      <MenuItem fx:id="menuItemAbout" mnemonicParsing="false" text="About" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Close" />
+                        <MenuItem fx:id="menuItemClose" mnemonicParsing="false" text="Close" />
                     </items>
                   </Menu>
                   <Menu mnemonicParsing="false">
                      <graphic>
-                        <Label fx:id="articleMenuLabel" text="Article" />
+                        <Label fx:id="articleMenu" text="Article" />
                      </graphic>
                   </Menu>
-                  <Menu mnemonicParsing="false" />
-                  <Menu mnemonicParsing="false" />
+                  <Menu mnemonicParsing="false">
+                     <graphic>
+                        <Label fx:id="supplierMenu" text="Supplier" />
+                     </graphic></Menu>
               </menus>
             </MenuBar>
             <CheckBox fx:id="useParalel" maxWidth="-Infinity" mnemonicParsing="false" prefWidth="250.0" text="Use paralel threads?">
