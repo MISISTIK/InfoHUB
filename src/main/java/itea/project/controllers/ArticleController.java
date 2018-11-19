@@ -110,9 +110,11 @@ public class ArticleController extends Controller {
                     excelMap.put("Prices", tdPrice.getDataForExcel());
                     excelMap.put("Info", tdInfo.getDataForExcel());
 
-                    save2Excel(file_xls.getAbsolutePath(), excelMap);
+                    if (save2Excel(file_xls.getAbsolutePath(), excelMap)) {
+                        alertInfo("File \"" + filename + "\" successfully created", "Congrats !");
+                    }
 
-                    alertInfo("File \"" + filename + "\" successfully created", "Congrats !");
+
                 }
             } catch (Exception e) {
                 alertError(e);
@@ -149,6 +151,7 @@ public class ArticleController extends Controller {
                         Platform.runLater(() -> {
                             timeLabel.setText("");
                             btn.setDisable(true);
+                            export2ExcelButton.setDisable(true);
                             progressIndicator.setVisible(true);
                         });
 
@@ -172,6 +175,7 @@ public class ArticleController extends Controller {
                             long elapsedTime = stopTime - startTime;
                             timeLabel.setText((String.format("%.2f sec", elapsedTime / 1000.0)));
                             btn.setDisable(false);
+                            export2ExcelButton.setDisable(false);
                             progressIndicator.setVisible(false);
                         });
                     }).start();

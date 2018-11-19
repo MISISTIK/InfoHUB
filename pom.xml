@@ -4,7 +4,7 @@
 
     <groupId>itea.project</groupId>
     <artifactId>InfoHUB</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
     <name>InfoHUB</name>
@@ -54,24 +54,6 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>com.zenjava</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>8.8.3</version>
-                <configuration>
-                    <mainClass>${mainClass}</mainClass>
-                </configuration>
-                <executions>
-                    <execution>
-                        <!-- required before build-web -->
-                        <id>create-jfxjar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>build-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.0</version>

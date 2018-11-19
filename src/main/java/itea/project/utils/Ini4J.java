@@ -1,13 +1,13 @@
 package itea.project.utils;
 
+import itea.project.MainApp;
 import javafx.application.Platform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.ref.SoftReference;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,7 +25,18 @@ public class Ini4J {
     private Ini4J() {
         try {
             if (!Files.exists(Paths.get(iniFileName))) {
-                Files.copy(Paths.get(getClass().getResource("/" + iniFileName).toURI()), Paths.get(iniFileName));
+                try (OutputStream outf = new FileOutputStream(iniFileName);
+                     InputStream in = MainApp.class.getClassLoader().getResourceAsStream(iniFileName)) {
+
+                    int readBytes;
+                    byte[] buffer = new byte[4096];
+                    while ((readBytes = in.read(buffer)) > 0) {
+                        outf.write(buffer, 0, readBytes);
+                    }
+                } catch (Exception e) {
+                    alertError(e);
+                    Platform.exit();
+                }
             }
             ini = new Ini();
             ini.load(new File(iniFileName));

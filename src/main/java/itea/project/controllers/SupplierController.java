@@ -132,6 +132,7 @@ public class SupplierController extends Controller {
                         Platform.runLater(() -> {
                             timeLabel.setText("");
                             suppBtn.setDisable(true);
+                            export2ExcelButton.setDisable(true);
                             progressIndicator.setVisible(true);
                         });
 
@@ -155,6 +156,7 @@ public class SupplierController extends Controller {
                             long elapsedTime = stopTime - startTime;
                             timeLabel.setText((String.format("%.2f sec", elapsedTime / 1000.0)));
                             suppBtn.setDisable(false);
+                            export2ExcelButton.setDisable(false);
                             progressIndicator.setVisible(false);
                         });
                     }).start();

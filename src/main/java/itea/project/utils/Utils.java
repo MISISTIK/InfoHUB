@@ -26,28 +26,34 @@ public class Utils {
 
     private static Map<String, CellStyle> styleMap = new HashMap<>();
 
-
     public static void checkSQLFolder() {
         try {
-            File sql_dir_res = new File(MainApp.class.getClassLoader().getResource("SQL_res").toURI());
-            Path sql_dir_local = Paths.get("SQL");
-            if (sql_dir_res.exists() && sql_dir_res.isDirectory()) {
-                if (!Files.exists(sql_dir_local) || !Files.isDirectory(sql_dir_local)) {
-                    if (!new File(sql_dir_local.toUri()).mkdir()) {
-                        throw new Exception("Cannot create \"SQL\" dir here");
+            File sql_dir_local = new File("SQL");
+            if (!sql_dir_local.exists() || !sql_dir_local.isDirectory()) {
+                if (!sql_dir_local.mkdir()) {
+                    throw new Exception("Cannot create \"SQL\" dir here");
+                }
+            }
+            List<String> res_list = getResFileAsList("SqlList.txt");
+            for (String sql_filename : res_list) {
+                if (!Files.exists(Paths.get("SQL/" + sql_filename))) {
+                    try (OutputStream outf = new FileOutputStream("SQL/" + sql_filename);
+                         InputStream in = MainApp.class.getClassLoader().getResourceAsStream("SQL_res/" + sql_filename)) {
+
+                        int readBytes;
+                        byte[] buffer = new byte[4096];
+                        while ((readBytes = in.read(buffer)) > 0) {
+                            outf.write(buffer, 0, readBytes);
+                        }
+                    } catch (Exception e) {
+                        alertError(e);
                     }
                 }
-                for (String sql_filename : sql_dir_res.list()) {
-                    if (!Files.exists(Paths.get("SQL/" + sql_filename))) {
-                        Files.copy(new File(sql_dir_res.getAbsolutePath() + "/" + sql_filename).toPath(), new File(sql_dir_local.toFile().getAbsolutePath() + "/" + sql_filename).toPath());
-                    }
-                }
-            } else {
-                System.out.println("No SQL directory in resources");
             }
 
+
         } catch (Exception e) {
-            e.printStackTrace();
+            alertError(e);
         }
     }
 
@@ -96,7 +102,7 @@ public class Utils {
         styleMap.put("Coral", cellStyleCoral);
     }
 
-    public static void save2Excel(String fileName, Map<String, List<DataRow>> excelMap) {
+    public static boolean save2Excel(String fileName, Map<String, List<DataRow>> excelMap) {
 
         if (excelMap.size() > 0) {
             Workbook wb = new XSSFWorkbook();
@@ -104,7 +110,7 @@ public class Utils {
 
             boolean writeToFile = false;
             try {
-                Files.deleteIfExists(Paths.get(new File("").getAbsolutePath().substring(0, new File("").getAbsolutePath().length()) + "\\" + fileName));
+                Files.deleteIfExists(Paths.get(fileName));
                 int tableNum = 0;
                 for (String s : excelMap.keySet()) {
                     writeToFile = true;
@@ -142,20 +148,24 @@ public class Utils {
                         wb.write(out);
                     } catch (Exception e) {
                         alertError(e);
+                        return false;
                     }
 
                 }
 
             } catch (Exception e) {
                 alertError(e);
+                return false;
             } finally {
                 try {
                     wb.close();
                 } catch (IOException e) {
                     alertError(e);
+                    return false;
                 }
             }
         }
+        return true;
     }
 
     public static List<String> getResFileAsList(String path) {
