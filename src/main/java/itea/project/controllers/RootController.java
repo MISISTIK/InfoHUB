@@ -11,6 +11,7 @@ import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,6 +49,11 @@ public class RootController extends Controller {
     @FXML
     private Button nextButton;
 
+    @FXML
+    private Button stopButton;
+
+    @FXML
+    private Button previousButton;
 
     private Ini4J ini;
     private MediaPlayer player;
@@ -57,6 +63,7 @@ public class RootController extends Controller {
 
     private void mediaPlayerInit() {
         mediaList = listResFolder("media");
+        mediaList.sort(Comparator.naturalOrder());
         if (mediaList.size() > 0) {
             String musicPath = MainApp.class.getResource("/" + mediaList.get(0)).toString();
             Media hit = new Media(musicPath);
@@ -72,14 +79,40 @@ public class RootController extends Controller {
     @FXML
     private void initialize() {
         ini = Ini4J.getInstance();
-        mediaPlayerInit();
+        Platform.runLater(() -> {
+            mediaPlayerInit();
+            mainApp.primaryStage.setTitle("InfoHUB v1.1" + " - " + mediaList.get(currentTrack));
+        });
 
         nextButton.setOnAction(event -> {
             if (player != null && mediaList.size() > 0) {
+                player.stop();
                 if (currentTrack == mediaList.size() - 1) {
                     currentTrack = 0;
+                } else {
+                    currentTrack++;
                 }
-                //player = new MediaPlayer();
+                player = new MediaPlayer(new Media(MainApp.class.getResource("/" + mediaList.get(currentTrack)).toString()));
+                mainApp.primaryStage.setTitle("InfoHUB v1.1" + " - " + mediaList.get(currentTrack));
+                if (isPlaying.get()) {
+                    player.play();
+                }
+            }
+        });
+
+        previousButton.setOnAction(event -> {
+            if (player != null && mediaList.size() > 0) {
+                player.stop();
+                if (currentTrack == 0) {
+                    currentTrack = mediaList.size() - 1;
+                } else {
+                    currentTrack--;
+                }
+                player = new MediaPlayer(new Media(MainApp.class.getResource("/" + mediaList.get(currentTrack)).toString()));
+                mainApp.primaryStage.setTitle("InfoHUB v1.1" + " - " + mediaList.get(currentTrack));
+                if (isPlaying.get()) {
+                    player.play();
+                }
             }
         });
 
@@ -89,10 +122,19 @@ public class RootController extends Controller {
                     playButton.setText("Play");
                     player.pause();
                 } else {
-                    playButton.setText("Stop");
+                    playButton.setText("Pause");
                     player.play();
+                    mainApp.primaryStage.setTitle("InfoHUB v1.1" + " - " + mediaList.get(currentTrack));
                 }
                 isPlaying.set(!isPlaying.get());
+            }
+        });
+
+        stopButton.setOnAction(event -> {
+            if (player != null) {
+                isPlaying.set(false);
+                playButton.setText("Play");
+                player.stop();
             }
         });
 

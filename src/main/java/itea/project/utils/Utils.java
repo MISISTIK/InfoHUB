@@ -10,12 +10,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -94,7 +92,7 @@ public class Utils {
     }
 
     public static void checkSQLFolder(String resFolder, String localFolder) {
-        extractJarResFolder(listResFolder(resFolder),localFolder);
+        extractJarResFolder(listResFolder(resFolder), localFolder);
     }
 
     public static String getSQLFromFile(String sql_filename) {
