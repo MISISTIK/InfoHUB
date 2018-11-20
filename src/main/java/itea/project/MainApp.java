@@ -20,9 +20,10 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.List;
 
 import static itea.project.utils.FxUtils.getStackTrace;
-import static itea.project.utils.Utils.checkSQLFolder;
+import static itea.project.utils.Utils.*;
 
 public class MainApp extends Application {
     public static Logger LOGGER = LogManager.getLogger();
@@ -37,12 +38,12 @@ public class MainApp extends Application {
     private Ini4J ini;
 
     private void initLayout(boolean isDev) {
+        //extractJarResFolder(listResFolder("SQL_res"),"SQL");
+        //extractJarResFolder(,"SQL");
         ini = Ini4J.getInstance();
         isAppInit = true;
-        checkSQLFolder();
+        checkSQLFolder("SQL_res",ini.getParam("ROOT","SqlFolderName"));
         try {
-
-
             //for dev use
             if (isDev) {
                 String file_str = "file://" + (System.getProperty("os.name").contains("Windows") ? "/" : "");

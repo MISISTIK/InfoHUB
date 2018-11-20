@@ -11,9 +11,12 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 import static itea.project.utils.FxUtils.alertError;
 import static itea.project.MainApp.LOGGER;
+import static itea.project.utils.Utils.extractJarResFolder;
+import static itea.project.utils.Utils.listResFolder;
 
 //realizes the Singleton pattern
 public class Ini4J {
@@ -24,20 +27,7 @@ public class Ini4J {
 
     private Ini4J() {
         try {
-            if (!Files.exists(Paths.get(iniFileName))) {
-                try (OutputStream outf = new FileOutputStream(iniFileName);
-                     InputStream in = MainApp.class.getClassLoader().getResourceAsStream(iniFileName)) {
-
-                    int readBytes;
-                    byte[] buffer = new byte[4096];
-                    while ((readBytes = in.read(buffer)) > 0) {
-                        outf.write(buffer, 0, readBytes);
-                    }
-                } catch (Exception e) {
-                    alertError(e);
-                    Platform.exit();
-                }
-            }
+            extractJarResFolder(Collections.singletonList(iniFileName),".");
             ini = new Ini();
             ini.load(new File(iniFileName));
             checkIni();

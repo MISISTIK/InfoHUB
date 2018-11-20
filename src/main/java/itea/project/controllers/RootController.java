@@ -3,21 +3,14 @@ package itea.project.controllers;
 import itea.project.MainApp;
 import itea.project.utils.Ini4J;
 import javafx.application.Platform;
-import javafx.event.Event;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.stage.WindowEvent;
-import sun.rmi.runtime.Log;
 
 import java.util.List;
 
 import static itea.project.MainApp.LOGGER;
-import static itea.project.MainApp.main;
 import static itea.project.utils.Utils.getResFileAsList;
-import static javafx.stage.WindowEvent.WINDOW_CLOSE_REQUEST;
 
 public class RootController extends Controller {
 

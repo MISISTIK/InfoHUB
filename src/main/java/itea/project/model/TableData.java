@@ -53,7 +53,7 @@ public class TableData {
 
     public List<DataRow> getDataForExcel() {
         WeakReference<List<DataRow>> resList = new WeakReference<>(new ArrayList<>());
-        resList.get().add(new DataRow(headers));
+        resList.get().add(new DataRow((Object[]) headers));
         resList.get().addAll(dataList);
         return resList.get();
     }

@@ -10,11 +10,17 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.CodeSource;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static itea.project.MainApp.LOGGER;
 import static itea.project.utils.FxUtils.alertError;
@@ -26,35 +32,66 @@ public class Utils {
 
     private static Map<String, CellStyle> styleMap = new HashMap<>();
 
-    public static void checkSQLFolder() {
-        try {
-            File sql_dir_local = new File("SQL");
-            if (!sql_dir_local.exists() || !sql_dir_local.isDirectory()) {
-                if (!sql_dir_local.mkdir()) {
-                    throw new Exception("Cannot create \"SQL\" dir here");
+    public static boolean isJar() {
+        return !MainApp.class.getResource(MainApp.class.getSimpleName() + ".class").toString().substring(0, 4).equals("file");
+    }
+
+    public static List<String> listResFolder(String resFolderPath) {
+        if (isJar()) {
+            CodeSource src = MainApp.class.getProtectionDomain().getCodeSource();
+            List<String> list = new ArrayList<>();
+
+            if (src != null) {
+                URL jar = src.getLocation();
+                try (ZipInputStream zip = new ZipInputStream(jar.openStream())) {
+                    ZipEntry ze;
+                    while ((ze = zip.getNextEntry()) != null) {
+                        String z = ze.getName();
+                        if (z.startsWith(resFolderPath + "/") && !z.equals(resFolderPath + "/")) {
+                            list.add(z);
+                        }
+
+                    }
+                } catch (IOException e) {
+                    alertError(e);
                 }
             }
-            List<String> res_list = getResFileAsList("SqlList.txt");
-            for (String sql_filename : res_list) {
-                if (!Files.exists(Paths.get("SQL/" + sql_filename))) {
-                    try (OutputStream outf = new FileOutputStream("SQL/" + sql_filename);
-                         InputStream in = MainApp.class.getClassLoader().getResourceAsStream("SQL_res/" + sql_filename)) {
-
-                        int readBytes;
-                        byte[] buffer = new byte[4096];
-                        while ((readBytes = in.read(buffer)) > 0) {
-                            outf.write(buffer, 0, readBytes);
-                        }
-                    } catch (Exception e) {
-                        alertError(e);
+            return list;
+        } else {
+            List<String> list = new ArrayList<>();
+            String d = MainApp.class.getResource("/" + resFolderPath).toString().replace("file:", "");
+            if (new File(d).exists() && new File(d).isDirectory()) {
+                File[] dirList = new File(d).listFiles();
+                if (dirList != null) {
+                    for (File f : dirList) {
+                        list.add(resFolderPath + "/" + f.getName());
                     }
                 }
             }
-
-
-        } catch (Exception e) {
-            alertError(e);
+            return list;
         }
+    }
+
+    public static void extractJarResFolder(List<String> list, String outFolder) {
+        if (!(new File(outFolder).exists())) {
+            new File(outFolder).mkdir();
+        }
+        for (String s : list) {
+            String filename = s.substring(s.indexOf('/') + 1);
+            try (InputStream in = MainApp.class.getResourceAsStream("/" + s)) {
+                if (!(new File(outFolder + "/" + filename).exists())) {
+                    Files.copy(in, Paths.get(outFolder + "/" + filename));
+                    LOGGER.info("Extracted missing file from resources to " + outFolder + "/" + filename);
+                }
+            } catch (Exception e) {
+                alertError(e);
+            }
+        }
+
+    }
+
+    public static void checkSQLFolder(String resFolder, String localFolder) {
+        extractJarResFolder(listResFolder(resFolder),localFolder);
     }
 
     public static String getSQLFromFile(String sql_filename) {
