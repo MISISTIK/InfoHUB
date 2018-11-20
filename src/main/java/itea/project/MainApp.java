@@ -20,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.List;
 
 import static itea.project.utils.FxUtils.getStackTrace;
 import static itea.project.utils.Utils.*;
@@ -51,9 +50,9 @@ public class MainApp extends Application {
                 loadArticleLayout(new URL(file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/article.fxml"));
                 loadSupplierLayout(new URL(file_str + System.getProperty("user.dir") + "/src/main/java/itea/project/controllers/supplier.fxml"));
             } else {
-                loadRootLayout(getClass().getResource("/view/root.fxml"));
-                loadArticleLayout(getClass().getResource("/view/article.fxml"));
-                loadSupplierLayout(getClass().getResource("/view/supplier.fxml"));
+                loadRootLayout(getClass().getResource("/itea/project/controllers/root.fxml"));
+                loadArticleLayout(getClass().getResource("/itea/project/controllers/article.fxml"));
+                loadSupplierLayout(getClass().getResource("/itea/project/controllers/supplier.fxml"));
             }
 
             final int wVal = 10;
@@ -144,11 +143,11 @@ public class MainApp extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         LOGGER.info("=================== PROGRAM START ===================");
         this.primaryStage = primaryStage;
         //TODO change this for prod
-        boolean dev = false;
+        boolean dev = true;
         initLayout(dev);
         setLayout(articleLayout,articleController);
     }

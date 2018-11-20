@@ -6,11 +6,17 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static itea.project.MainApp.LOGGER;
 import static itea.project.utils.Utils.getResFileAsList;
+import static itea.project.utils.Utils.listResFolder;
 
 public class RootController extends Controller {
 
@@ -36,11 +42,59 @@ public class RootController extends Controller {
     @FXML
     private MenuItem menuItemClose;
 
+    @FXML
+    private Button playButton;
+
+    @FXML
+    private Button nextButton;
+
+
     private Ini4J ini;
+    private MediaPlayer player;
+    private AtomicBoolean isPlaying = new AtomicBoolean(false);
+    private int currentTrack = 0;
+    List<String> mediaList = new ArrayList<>();
+
+    private void mediaPlayerInit() {
+        mediaList = listResFolder("media");
+        if (mediaList.size() > 0) {
+            String musicPath = MainApp.class.getResource("/" + mediaList.get(0)).toString();
+            Media hit = new Media(musicPath);
+            player = new MediaPlayer(hit);
+            player.setStartTime(Duration.ZERO);
+            player.setOnEndOfMedia(() -> {
+                player.seek(Duration.ZERO);
+                player.play();
+            });
+        }
+    }
 
     @FXML
     private void initialize() {
         ini = Ini4J.getInstance();
+        mediaPlayerInit();
+
+        nextButton.setOnAction(event -> {
+            if (player != null && mediaList.size() > 0) {
+                if (currentTrack == mediaList.size() - 1) {
+                    currentTrack = 0;
+                }
+                //player = new MediaPlayer();
+            }
+        });
+
+        playButton.setOnAction(event -> {
+            if (player != null) {
+                if ((isPlaying.get())) {
+                    playButton.setText("Play");
+                    player.pause();
+                } else {
+                    playButton.setText("Stop");
+                    player.play();
+                }
+                isPlaying.set(!isPlaying.get());
+            }
+        });
 
         Platform.runLater(() -> {
             ImageView menuPic = new ImageView("/img/menu.png");

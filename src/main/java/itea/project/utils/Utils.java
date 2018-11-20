@@ -37,39 +37,42 @@ public class Utils {
     }
 
     public static List<String> listResFolder(String resFolderPath) {
-        if (isJar()) {
-            CodeSource src = MainApp.class.getProtectionDomain().getCodeSource();
-            List<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
+        try {
+            if (isJar()) {
+                CodeSource src = MainApp.class.getProtectionDomain().getCodeSource();
 
-            if (src != null) {
-                URL jar = src.getLocation();
-                try (ZipInputStream zip = new ZipInputStream(jar.openStream())) {
-                    ZipEntry ze;
-                    while ((ze = zip.getNextEntry()) != null) {
-                        String z = ze.getName();
-                        if (z.startsWith(resFolderPath + "/") && !z.equals(resFolderPath + "/")) {
-                            list.add(z);
+                if (src != null) {
+                    URL jar = src.getLocation();
+                    try (ZipInputStream zip = new ZipInputStream(jar.openStream())) {
+                        ZipEntry ze;
+                        while ((ze = zip.getNextEntry()) != null) {
+                            String z = ze.getName();
+                            if (z.startsWith(resFolderPath + "/") && !z.equals(resFolderPath + "/")) {
+                                list.add(z);
+                            }
                         }
+                    } catch (IOException e) {
+                        alertError(e);
+                    }
+                }
+            } else {
 
-                    }
-                } catch (IOException e) {
-                    alertError(e);
-                }
-            }
-            return list;
-        } else {
-            List<String> list = new ArrayList<>();
-            String d = MainApp.class.getResource("/" + resFolderPath).toString().replace("file:", "");
-            if (new File(d).exists() && new File(d).isDirectory()) {
-                File[] dirList = new File(d).listFiles();
-                if (dirList != null) {
-                    for (File f : dirList) {
-                        list.add(resFolderPath + "/" + f.getName());
+                String d = MainApp.class.getResource("/" + resFolderPath).toString().replace("file:", "");
+                if (new File(d).exists() && new File(d).isDirectory()) {
+                    File[] dirList = new File(d).listFiles();
+                    if (dirList != null) {
+                        for (File f : dirList) {
+                            list.add(resFolderPath + "/" + f.getName());
+                        }
                     }
                 }
+
             }
-            return list;
+        } catch (Exception e) {
+            alertError(e);
         }
+        return list;
     }
 
     public static void extractJarResFolder(List<String> list, String outFolder) {
