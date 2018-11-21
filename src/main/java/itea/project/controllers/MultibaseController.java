@@ -13,7 +13,6 @@ import javafx.stage.FileChooser;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,13 +31,13 @@ public class MultibaseController extends Controller {
     private Button export2ExcelButton;
 
     @FXML
-    private Button suppBtn;
+    private Button searchBtn;
 
     @FXML
     private TableView<DataRow> table;
 
     @FXML
-    private TextField suppInputField;
+    private TextField inputField;
 
     @FXML
     private ProgressIndicator progressIndicator;
@@ -100,13 +99,13 @@ public class MultibaseController extends Controller {
 
         tabPane.getSelectionModel().selectedItemProperty().addListener(tabListener);
 
-        suppInputField.setOnKeyPressed(event -> {
+        inputField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER)
             {
-                suppBtn.fire();
+                searchBtn.fire();
                 event.consume();
             }
-            suppInputField.setStyle("-fx-control-inner-background: white");
+            inputField.setStyle("-fx-control-inner-background: white");
         });
 
         export2ExcelButton.setOnAction((event) -> {
@@ -128,8 +127,10 @@ public class MultibaseController extends Controller {
                         file_xls = new File(file_xls.getParent() + "/" + filename);
                     }
                     Map<String, List<DataRow>> excelMap = new HashMap<>();
-                    excelMap.put("SupplierArticles", tdMySql.getDataForExcel());
-                    excelMap.put("Info", tdAll.getDataForExcel());
+                    excelMap.put("Sqlite", tdSqlite.getDataForExcel());
+                    excelMap.put("Oracle", tdOracle.getDataForExcel());
+                    excelMap.put("MySql", tdMySql.getDataForExcel());
+                    excelMap.put("All", tdAll.getDataForExcel());
 
                     save2Excel(file_xls.getAbsolutePath(), excelMap);
 
@@ -140,14 +141,12 @@ public class MultibaseController extends Controller {
             }
         });
 
-        suppBtn.setOnAction((event) -> {
+        searchBtn.setOnAction((event) -> {
             try {
                 tdAll.clear();
                 tdMySql.clear();
                 tdOracle.clear();
                 tdSqlite.clear();
-                String supp_str = suppInputField.getText();
-                if (supp_str.matches("[\\d]+")) {
                     List<SQLThread> threadPool = new ArrayList<>();
                     // Connections block
                     String OracleUrl = ini.getParam("CONNECTIONS", "OracleUrl");
@@ -214,7 +213,7 @@ public class MultibaseController extends Controller {
                         long startTime = System.currentTimeMillis();
                         Platform.runLater(() -> {
                             timeLabel.setText("");
-                            suppBtn.setDisable(true);
+                            searchBtn.setDisable(true);
                             export2ExcelButton.setDisable(true);
                             progressIndicator.setVisible(true);
                         });
@@ -231,25 +230,18 @@ public class MultibaseController extends Controller {
                             }
                         }
                         Platform.runLater(() -> {
-                            suppInputField.setStyle("-fx-control-inner-background: lime");
+                            inputField.setStyle("-fx-control-inner-background: lime");
                             if (tdAll.getTableData().size() == 0) {
-                                suppInputField.setStyle("-fx-control-inner-background: yellow");
+                                inputField.setStyle("-fx-control-inner-background: yellow");
                             }
                             long stopTime = System.currentTimeMillis();
                             long elapsedTime = stopTime - startTime;
                             timeLabel.setText((String.format("%.2f sec", elapsedTime / 1000.0)));
-                            suppBtn.setDisable(false);
+                            searchBtn.setDisable(false);
                             export2ExcelButton.setDisable(false);
                             progressIndicator.setVisible(false);
                         });
                     }).start();
-                } else {
-                    Platform.runLater(() -> suppInputField.setStyle("-fx-control-inner-background: red"));
-                }
-                Platform.runLater(() -> {
-                    suppInputField.setText(supp_str);
-                    suppInputField.selectAll();
-                });
             } catch (Exception e) {
                 alertError(e);
             }
@@ -263,7 +255,7 @@ public class MultibaseController extends Controller {
 
     @Override
     public void setFocus() {
-        Platform.runLater(() -> suppInputField.requestFocus());
+        Platform.runLater(() -> inputField.requestFocus());
     }
 
 

@@ -149,36 +149,36 @@ public class Utils {
             boolean writeToFile = false;
             try {
                 Files.deleteIfExists(Paths.get(fileName));
-                int tableNum = 0;
                 for (String s : excelMap.keySet()) {
                     writeToFile = true;
-                    tableNum++;
-                    List<DataRow> tempList = new ArrayList<>(excelMap.get(s));
-                    int maxCol = tempList.get(0).size();
-                    int maxRow = tempList.size();
+                    List<DataRow> tempList;
                     XSSFSheet sheet = (XSSFSheet) wb.createSheet(s);
-
-                    DataRow td = tempList.get(0);
-                    XSSFRow trow = sheet.createRow(0);
-                    for (int j = 0; j < td.size(); j++) {
-                        XSSFCell cell = trow.createCell(j);
-                        cell.setCellValue(td.get(j).toString());
-                        cell.setCellStyle(styleMap.get("Header"));
-                    }
-
-                    for (int i = 1; i < maxRow; i++) {
-                        XSSFRow row = sheet.createRow(i);
-                        DataRow d = tempList.get(i);
-                        for (int j = 0; j < d.size(); j++) {
-                            XSSFCell cell = row.createCell(j);
-                            cell.setCellValue(d.get(j).toString());
+                    if (excelMap.get(s) != null) {
+                        tempList = new ArrayList<>(excelMap.get(s));
+                        int maxCol = tempList.get(0).size();
+                        int maxRow = tempList.size();
+                        DataRow td = tempList.get(0);
+                        XSSFRow trow = sheet.createRow(0);
+                        for (int j = 0; j < td.size(); j++) {
+                            XSSFCell cell = trow.createCell(j);
+                            cell.setCellValue(td.get(j).toString());
+                            cell.setCellStyle(styleMap.get("Header"));
                         }
-                    }
-                    sheet.setAutoFilter(new CellRangeAddress(0, maxRow - 1, 0, maxCol - 1));
-                    // ------ Sheet customising ---------
-                    for (int i = 0; i < maxCol; i++) {
-                        sheet.autoSizeColumn(i);
-                        sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 500);
+
+                        for (int i = 1; i < maxRow; i++) {
+                            XSSFRow row = sheet.createRow(i);
+                            DataRow d = tempList.get(i);
+                            for (int j = 0; j < d.size(); j++) {
+                                XSSFCell cell = row.createCell(j);
+                                cell.setCellValue(d.get(j).toString());
+                            }
+                        }
+                        sheet.setAutoFilter(new CellRangeAddress(0, maxRow - 1, 0, maxCol - 1));
+                        // ------ Sheet customising ---------
+                        for (int i = 0; i < maxCol; i++) {
+                            sheet.autoSizeColumn(i);
+                            sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 500);
+                        }
                     }
                 }
                 if (writeToFile) {

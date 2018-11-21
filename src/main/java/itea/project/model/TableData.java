@@ -65,6 +65,9 @@ public class TableData {
     }
 
     public List<DataRow> getDataForExcel() {
+        if (headers == null || dataList == null) {
+            return null;
+        }
         WeakReference<List<DataRow>> resList = new WeakReference<>(new ArrayList<>());
         resList.get().add(new DataRow((Object[]) headers));
         resList.get().addAll(dataList);
