@@ -100,8 +100,7 @@ public class MultibaseController extends Controller {
         tabPane.getSelectionModel().selectedItemProperty().addListener(tabListener);
 
         inputField.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER)
-            {
+            if (event.getCode() == KeyCode.ENTER) {
                 searchBtn.fire();
                 event.consume();
             }
@@ -111,10 +110,10 @@ public class MultibaseController extends Controller {
         export2ExcelButton.setOnAction((event) -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save to Excel");
-            fileChooser.setInitialFileName(this.getClass().getSimpleName()+".xlsx");
+            fileChooser.setInitialFileName(this.getClass().getSimpleName() + ".xlsx");
             fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter("Excel", "*.xlsx"),
-            new FileChooser.ExtensionFilter("All Files", "*.*"));
+                    new FileChooser.ExtensionFilter("Excel", "*.xlsx"),
+                    new FileChooser.ExtensionFilter("All Files", "*.*"));
             fileChooser.setInitialDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
             try {
 
@@ -147,17 +146,18 @@ public class MultibaseController extends Controller {
                 tdMySql.clear();
                 tdOracle.clear();
                 tdSqlite.clear();
-                    List<SQLThread> threadPool = new ArrayList<>();
-                    // Connections block
-                    String OracleUrl = ini.getParam("CONNECTIONS", "OracleUrl");
-                    String OracleName = ini.getParam("CONNECTIONS", "OracleName");
-                    String OraclePassword = ini.getParam("CONNECTIONS", "OraclePassword");
-                    String MySqlUrl = ini.getParam("CONNECTIONS", "MySqlUrl");
-                    String MySqlName = ini.getParam("CONNECTIONS", "MySqlName");
-                    String MySqlPassword = ini.getParam("CONNECTIONS", "MySqlPassword");
-                    String SqliteUrl = ini.getParam("CONNECTIONS", "SqliteUrl");
+                List<SQLThread> threadPool = new ArrayList<>();
+                // Connections block
+                String OracleUrl = ini.getParam("CONNECTIONS", "OracleUrl");
+                String OracleName = ini.getParam("CONNECTIONS", "OracleName");
+                String OraclePassword = ini.getParam("CONNECTIONS", "OraclePassword");
+                String MySqlUrl = ini.getParam("CONNECTIONS", "MySqlUrl");
+                String MySqlName = ini.getParam("CONNECTIONS", "MySqlName");
+                String MySqlPassword = ini.getParam("CONNECTIONS", "MySqlPassword");
+                String SqliteUrl = ini.getParam("CONNECTIONS", "SqliteUrl");
 
 
+                if (MySqlUrl.length() != 0 && MySqlName.length() != 0 && MySqlPassword.length() != 0) {
                     threadPool.add(new SQLThread(
                             getSQLFromFile("1_MySql.sql"),
                             MySqlUrl,
@@ -166,24 +166,6 @@ public class MultibaseController extends Controller {
                             tdMySql,
                             semaphore,
                             "MySQL_Thread"));
-
-                    threadPool.add(new SQLThread(
-                            getSQLFromFile("2_OracleSQL.sql"),
-                            OracleUrl,
-                            OracleName,
-                            OraclePassword,
-                            tdOracle,
-                            semaphore,
-                            "Oracle_Thread"));
-
-                    threadPool.add(new SQLThread(
-                            getSQLFromFile("3_SqliteSQL.sql"),
-                            SqliteUrl,
-                            tdSqlite,
-                            semaphore,
-                            "Sqlite_Thread"));
-
-                    //ALL TAB ADD INFO
                     threadPool.add(new SQLThread(
                             getSQLFromFile("1_MySql.sql"),
                             MySqlUrl,
@@ -192,7 +174,17 @@ public class MultibaseController extends Controller {
                             tdAll,
                             semaphore,
                             "MySQL_Thread"));
+                }
 
+                if (OracleUrl.length() != 0 && OracleName.length() != 0 && OraclePassword.length() != 0) {
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("2_OracleSQL.sql"),
+                            OracleUrl,
+                            OracleName,
+                            OraclePassword,
+                            tdOracle,
+                            semaphore,
+                            "Oracle_Thread"));
                     threadPool.add(new SQLThread(
                             getSQLFromFile("2_OracleSQL.sql"),
                             OracleUrl,
@@ -201,6 +193,14 @@ public class MultibaseController extends Controller {
                             tdAll,
                             semaphore,
                             "Oracle_Thread"));
+                }
+                if (SqliteUrl.length() != 0) {
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("3_SqliteSQL.sql"),
+                            SqliteUrl,
+                            tdSqlite,
+                            semaphore,
+                            "Sqlite_Thread"));
 
                     threadPool.add(new SQLThread(
                             getSQLFromFile("3_SqliteSQL.sql"),
@@ -208,40 +208,40 @@ public class MultibaseController extends Controller {
                             tdAll,
                             semaphore,
                             "Sqlite_Thread"));
+                }
+                new Thread(() -> {
+                    long startTime = System.currentTimeMillis();
+                    Platform.runLater(() -> {
+                        timeLabel.setText("");
+                        searchBtn.setDisable(true);
+                        export2ExcelButton.setDisable(true);
+                        progressIndicator.setVisible(true);
+                    });
 
-                    new Thread(() -> {
-                        long startTime = System.currentTimeMillis();
-                        Platform.runLater(() -> {
-                            timeLabel.setText("");
-                            searchBtn.setDisable(true);
-                            export2ExcelButton.setDisable(true);
-                            progressIndicator.setVisible(true);
-                        });
-
+                    for (SQLThread sql_t : threadPool) {
+                        sql_t.start();
+                        if (!Boolean.parseBoolean(ini.getParam("ROOT", "UseParallelThreads"))) {
+                            sql_t.join();
+                        }
+                    }
+                    if (Boolean.parseBoolean(ini.getParam("ROOT", "UseParallelThreads"))) {
                         for (SQLThread sql_t : threadPool) {
-                            sql_t.start();
-                            if (!Boolean.parseBoolean(ini.getParam("ROOT", "UseParallelThreads"))) {
-                                sql_t.join();
-                            }
+                            sql_t.join();
                         }
-                        if (Boolean.parseBoolean(ini.getParam("ROOT", "UseParallelThreads"))) {
-                            for (SQLThread sql_t : threadPool) {
-                                sql_t.join();
-                            }
+                    }
+                    Platform.runLater(() -> {
+                        inputField.setStyle("-fx-control-inner-background: lime");
+                        if (tdAll.getTableData().size() == 0) {
+                            inputField.setStyle("-fx-control-inner-background: yellow");
                         }
-                        Platform.runLater(() -> {
-                            inputField.setStyle("-fx-control-inner-background: lime");
-                            if (tdAll.getTableData().size() == 0) {
-                                inputField.setStyle("-fx-control-inner-background: yellow");
-                            }
-                            long stopTime = System.currentTimeMillis();
-                            long elapsedTime = stopTime - startTime;
-                            timeLabel.setText((String.format("%.2f sec", elapsedTime / 1000.0)));
-                            searchBtn.setDisable(false);
-                            export2ExcelButton.setDisable(false);
-                            progressIndicator.setVisible(false);
-                        });
-                    }).start();
+                        long stopTime = System.currentTimeMillis();
+                        long elapsedTime = stopTime - startTime;
+                        timeLabel.setText((String.format("%.2f sec", elapsedTime / 1000.0)));
+                        searchBtn.setDisable(false);
+                        export2ExcelButton.setDisable(false);
+                        progressIndicator.setVisible(false);
+                    });
+                }).start();
             } catch (Exception e) {
                 alertError(e);
             }

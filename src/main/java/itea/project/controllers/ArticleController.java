@@ -141,19 +141,20 @@ public class ArticleController extends Controller {
                     String StoreUrl = ini.getParam("CONNECTIONS", "StoreUrl");
                     List<SQLThread> threadPool = new ArrayList<>();
 
-                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("ArticleInfo.sql"), art_str),
-                            StoreUrl, tdInfo,semaphore , "ArtInfo_Thread"));
+                    if (StoreUrl.length() != 0) {
+                        threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("ArticleInfo.sql"), art_str),
+                                StoreUrl, tdInfo, semaphore, "ArtInfo_Thread"));
 
-                    for (String s : stores) {
-                        threadPool.add(new SQLThread(
-                                MessageFormat.format(getSQLFromFile("PriceInfo.sql"), art_str, s),
-                                StoreUrl, tdPrice, semaphore, "PriceInfo_Thread_" + s
-                        ));
+                        for (String s : stores) {
+                            threadPool.add(new SQLThread(
+                                    MessageFormat.format(getSQLFromFile("PriceInfo.sql"), art_str, s),
+                                    StoreUrl, tdPrice, semaphore, "PriceInfo_Thread_" + s
+                            ));
+                        }
+
+                        threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierInfo.sql"), art_str),
+                                StoreUrl, tdSupplier, semaphore, "SuppliersInfo_Thread"));
                     }
-
-                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierInfo.sql"), art_str),
-                            StoreUrl, tdSupplier, semaphore, "SuppliersInfo_Thread"));
-
 
                     new Thread(() -> {
                         long startTime = System.currentTimeMillis();
