@@ -7,3 +7,9 @@ Good Log4J information
 https://stackoverflow.com/a/46368163/10299636
 
 install maven jar:
+mvn install:install-file
+-Dfile={Path/to/your/ojdbc.jar}
+-DgroupId=com.oracle
+-DartifactId=ojdbc6
+-Dversion=11.2.0
+-Dpackaging=jar
