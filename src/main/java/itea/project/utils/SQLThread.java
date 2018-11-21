@@ -20,6 +20,8 @@ public class SQLThread implements Runnable {
     List<DataRow> result;
     String[] headers;
     private String url;
+    private String name;
+    private String password;
     private String SQL;
     private Connection conn;
     private Thread thisThread;
@@ -31,11 +33,26 @@ public class SQLThread implements Runnable {
     public SQLThread(String SQL, String url, TableData td, Semaphore semaphore) {
         this.SQL = SQL;
         this.url = url;
+        this.name = null;
+        this.password = null;
         this.tableData = td;
         this.thisThread = new Thread(this);
         this.semaphore = semaphore;
         result = new ArrayList<>();
         ini = Ini4J.getInstance();
+    }
+
+    public SQLThread(String SQL, String url, String name, String password, TableData td, Semaphore semaphore) {
+        this(SQL, url, td, semaphore);
+        this.name = name;
+        this.password = password;
+    }
+
+    public SQLThread(String SQL, String url, String name, String password, TableData td, Semaphore semaphore, String threadName) {
+        this(SQL, url, td, semaphore);
+        this.name = name;
+        this.password = password;
+        this.thisThread.setName(threadName);
     }
 
     public SQLThread(String SQL, String url, TableData td, Semaphore semaphore, String threadName) {
@@ -46,7 +63,11 @@ public class SQLThread implements Runnable {
     @Override
     public void run() {
         try {
-            conn = DriverManager.getConnection(url);
+            if (name != null && password != null) {
+                conn = DriverManager.getConnection(url,name,password);
+            } else {
+                conn = DriverManager.getConnection(url);
+            }
             System.out.println("Connection established for " + thisThread.getName() + " thread");
             PreparedStatement preparedStatement = conn.prepareStatement(SQL);
             res = preparedStatement.executeQuery();
@@ -71,8 +92,8 @@ public class SQLThread implements Runnable {
                     } while (res.next());
                     System.out.println("[" + thisThread.getName() + "] " + "ResultSet -> DataRow DONE");
                     semaphore.acquire();
-                    tableData.setHeaders(headers);
-                    tableData.addList(result);
+                        tableData.setHeaders(headers);
+                        tableData.addList(result);
                     semaphore.release();
                 } else {
                     LOGGER.warn("ResultSet of " + thisThread.getName() + " is empty");

@@ -36,6 +36,8 @@ public class MainApp extends Application {
     public Stage primaryStage;
     private Ini4J ini;
 
+
+    //TODO Change dev to false
     private void initLayout(boolean isDev) {
         //extractJarResFolder(listResFolder("SQL_res"),"SQL");
         //extractJarResFolder(,"SQL");
