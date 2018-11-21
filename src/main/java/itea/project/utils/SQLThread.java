@@ -2,13 +2,13 @@ package itea.project.utils;
 
 import itea.project.model.DataRow;
 import itea.project.model.TableData;
-import javafx.scene.control.TableView;
+import javafx.application.Platform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +30,7 @@ public class SQLThread implements Runnable {
     private Ini4J ini;
     private Semaphore semaphore;
 
+
     public SQLThread(String SQL, String url, TableData td, Semaphore semaphore) {
         this.SQL = SQL;
         this.url = url;
@@ -40,6 +41,7 @@ public class SQLThread implements Runnable {
         this.semaphore = semaphore;
         result = new ArrayList<>();
         ini = Ini4J.getInstance();
+        this.thisThread.setDaemon(true);
     }
 
     public SQLThread(String SQL, String url, String name, String password, TableData td, Semaphore semaphore) {
@@ -92,8 +94,12 @@ public class SQLThread implements Runnable {
                     } while (res.next());
                     System.out.println("[" + thisThread.getName() + "] " + "ResultSet -> DataRow DONE");
                     semaphore.acquire();
-                        tableData.setHeaders(headers);
+                    Platform.runLater(() -> {
+                        if (!Arrays.equals(tableData.getHeaders(), headers)) {
+                            tableData.setHeaders(headers);
+                        }
                         tableData.addList(result);
+                    });
                     semaphore.release();
                 } else {
                     LOGGER.warn("ResultSet of " + thisThread.getName() + " is empty");

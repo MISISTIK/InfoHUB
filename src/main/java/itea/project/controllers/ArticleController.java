@@ -5,6 +5,7 @@ import itea.project.model.TableData;
 import itea.project.utils.Ini4J;
 import itea.project.utils.SQLThread;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -17,13 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import static itea.project.utils.FxUtils.alertError;
 import static itea.project.utils.FxUtils.alertInfo;
-import static itea.project.utils.Utils.getSQLFromFile;
-import static itea.project.utils.Utils.getStoreList;
-import static itea.project.utils.Utils.save2Excel;
+import static itea.project.utils.Utils.*;
 
 
 public class ArticleController extends Controller {
@@ -33,6 +31,9 @@ public class ArticleController extends Controller {
 
     @FXML
     private Button btn;
+
+    @FXML
+    private Button testSearch;
 
     @FXML
     private TableView<DataRow> table;
@@ -51,25 +52,20 @@ public class ArticleController extends Controller {
 
     private Ini4J ini;
     private Semaphore semaphore = new Semaphore(1);
+    private ChangeListener tabListener = null;
+
+    public TabPane getTabPane() {
+        return tabPane;
+    }
 
     @FXML
     private void initialize() {
         ini = Ini4J.getInstance();
-        TableData tdInfo = new TableData("id", "SEGMENT", "ART_NUM", "ART_NAME", "ART_SUPPLIER", "STATUS");
-        TableData tdPrice = new TableData("STORE_NUM", "id", "ART_NUM", "ART_PURCH_PRICE", "ART_PRICE");
-        TableData tdSupplier = new TableData("id","SUPPLIER_NUM","SUPPLIER_NAME","EMAIL","PHONE","STATUS","EDRPOU","GLN");
-        setCurrentTable(tdInfo);
+        TableData tdInfo = new TableData();
+        TableData tdPrice = new TableData();
+        TableData tdSupplier = new TableData();
 
-        inputField.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER)
-            {
-                btn.fire();
-                event.consume();
-            }
-            inputField.setStyle("-fx-control-inner-background: white");
-        });
-
-        tabPane.getSelectionModel().selectedItemProperty().addListener((ov, t, t1) -> {
+        tabListener = (observable, oldValue, newValue) -> {
             switch (tabPane.getSelectionModel().getSelectedIndex()) {
                 case 0: {
                     setCurrentTable(tdInfo);
@@ -79,14 +75,26 @@ public class ArticleController extends Controller {
                     setCurrentTable(tdPrice);
                     break;
                 }
-                case 2: {
+                default: {
                     setCurrentTable(tdSupplier);
                     break;
                 }
-                default: {
-                    break;
-                }
             }
+        };
+
+        tdInfo.setChangeListener(tabListener);
+        tdPrice.setChangeListener(tabListener);
+        tdSupplier.setChangeListener(tabListener);
+
+        tabPane.getSelectionModel().selectedItemProperty().addListener(tabListener);
+
+        inputField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER)
+            {
+                btn.fire();
+                event.consume();
+            }
+            inputField.setStyle("-fx-control-inner-background: white");
         });
 
         export2ExcelButton.setOnAction((event) -> {
@@ -115,8 +123,6 @@ public class ArticleController extends Controller {
                     if (save2Excel(file_xls.getAbsolutePath(), excelMap)) {
                         alertInfo("File \"" + filename + "\" successfully created", "Congrats !");
                     }
-
-
                 }
             } catch (Exception e) {
                 alertError(e);
@@ -134,6 +140,7 @@ public class ArticleController extends Controller {
 
                     String StoreUrl = ini.getParam("CONNECTIONS", "StoreUrl");
                     List<SQLThread> threadPool = new ArrayList<>();
+
                     threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("ArticleInfo.sql"), art_str),
                             StoreUrl, tdInfo,semaphore , "ArtInfo_Thread"));
 
@@ -180,9 +187,8 @@ public class ArticleController extends Controller {
                             export2ExcelButton.setDisable(false);
                             progressIndicator.setVisible(false);
                         });
-                    }).start();
 
-                    tabPane.getSelectionModel().select(tabPane.getSelectionModel().getSelectedItem());
+                    }).start();
                 } else {
                     Platform.runLater(() -> inputField.setStyle("-fx-control-inner-background: red"));
                 }
@@ -196,7 +202,7 @@ public class ArticleController extends Controller {
         });
     }
 
-    private void setCurrentTable(TableData tableDataToShow) {
+    private synchronized void setCurrentTable(TableData tableDataToShow) {
         table.getColumns().setAll(tableDataToShow.getTableColumns());
         table.setItems(tableDataToShow.getTableData());
     }

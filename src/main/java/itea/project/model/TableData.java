@@ -1,6 +1,8 @@
 package itea.project.model;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
@@ -9,8 +11,9 @@ import javafx.scene.control.TableView;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static itea.project.utils.FxUtils.alertError;
 
@@ -20,9 +23,10 @@ public class TableData {
 
     private ObservableList<DataRow> dataList = FXCollections.observableArrayList();
     private String[] headers;
+    private ChangeListener changeListener;
 
     public TableData() {
-        table.setItems(dataList);
+        this.table.setItems(dataList);
     }
 
     public TableData(String... headers) {
@@ -30,10 +34,14 @@ public class TableData {
         this.setHeaders(headers);
     }
 
+    public void setChangeListener(ChangeListener changeListener) {
+        this.changeListener = changeListener;
+    }
+
     public synchronized void setHeaders(String... headers) {
         if (table != null) {
             if (!Arrays.equals(this.headers, headers)) {
-                table.getColumns().setAll(Collections.emptyList());
+                table.getColumns().clear();
                 this.headers = headers;
                 for (int i = 0; i < headers.length; i++) {
                     TableColumn<DataRow, String> col = new TableColumn<>(headers[i]);
@@ -43,6 +51,11 @@ public class TableData {
                         return new ReadOnlyObjectWrapper<>(d.get(finalI)).asString();
                     });
                     table.getColumns().add(col);
+                }
+                if (changeListener != null) {
+                    Platform.runLater(() -> {
+                        changeListener.changed(null, null, null);
+                    });
                 }
             }
         } else {
@@ -72,10 +85,13 @@ public class TableData {
 
     }
 
+    public String[] getHeaders() {
+        return headers;
+    }
+
     public synchronized void addList(List<DataRow> list) {
         dataList.addAll(list);
     }
-
     public synchronized void addRow(Object... objs) {
         dataList.add(new DataRow(objs));
     }

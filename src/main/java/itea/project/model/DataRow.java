@@ -20,7 +20,12 @@ public class DataRow {
     public DataRow(Object... objs) {
         data_array = new Object[objs.length];
         for (int i = 0; i < objs.length; i++) {
-            this.data_array[i] = objs[i].toString();
+            if (objs[i] != null) {
+                this.data_array[i] = objs[i].toString();
+            } else {
+                this.data_array[i] = null;
+            }
+
         }
     }
 }

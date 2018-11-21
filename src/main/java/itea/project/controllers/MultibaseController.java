@@ -5,6 +5,7 @@ import itea.project.model.TableData;
 import itea.project.utils.Ini4J;
 import itea.project.utils.SQLThread;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -25,7 +26,7 @@ import static itea.project.utils.Utils.getSQLFromFile;
 import static itea.project.utils.Utils.save2Excel;
 
 
-public class SupplierController extends Controller {
+public class MultibaseController extends Controller {
 
     @FXML
     private Button export2ExcelButton;
@@ -48,16 +49,56 @@ public class SupplierController extends Controller {
     @FXML
     private TabPane tabPane;
 
-
     private Ini4J ini;
+    private ChangeListener tabListener = null;
     private Semaphore semaphore = new Semaphore(1);
+
+    public TabPane getTabPane() {
+        return tabPane;
+    }
 
     @FXML
     private void initialize() {
         ini = Ini4J.getInstance();
-        TableData tdInfo = new TableData("id","SUPPLIER_NUM","SUPPLIER_NAME","EMAIL","PHONE","STATUS","EDRPOU","GLN");
-        TableData tdArticle = new TableData("ART_SUPPLIER","id","SEGMENT","ART_NUM","ART_NAME","STATUS");
-        setCurrentTable(tdInfo);
+        TableData tdAll = new TableData();
+        TableData tdMySql = new TableData();
+        TableData tdOracle = new TableData();
+        TableData tdSqlite = new TableData();
+        setCurrentTable(tdAll);
+
+        tabListener = (observable, oldValue, newValue) -> {
+            switch (tabPane.getSelectionModel().getSelectedIndex()) {
+                case 0: {
+                    setCurrentTable(tdAll);
+                    break;
+                }
+                case 1: {
+                    setCurrentTable(tdMySql);
+                    break;
+                }
+                case 2: {
+                    setCurrentTable(tdOracle);
+                    break;
+                }
+                case 3: {
+                    setCurrentTable(tdSqlite);
+                    break;
+                }
+
+                default: {
+                    alertError(new Exception("Now such tab with that index " + tabPane.getSelectionModel().getSelectedIndex()));
+                    break;
+                }
+            }
+        };
+
+        tdAll.setChangeListener(tabListener);
+        tdMySql.setChangeListener(tabListener);
+        tdMySql.setChangeListener(tabListener);
+        tdOracle.setChangeListener(tabListener);
+        tdSqlite.setChangeListener(tabListener);
+
+        tabPane.getSelectionModel().selectedItemProperty().addListener(tabListener);
 
         suppInputField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER)
@@ -68,26 +109,10 @@ public class SupplierController extends Controller {
             suppInputField.setStyle("-fx-control-inner-background: white");
         });
 
-        tabPane.getSelectionModel().selectedItemProperty().addListener((ov, t, t1) -> {
-            switch (tabPane.getSelectionModel().getSelectedIndex()) {
-                case 0: {
-                    setCurrentTable(tdInfo);
-                    break;
-                }
-                case 1: {
-                    setCurrentTable(tdArticle);
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-        });
-
         export2ExcelButton.setOnAction((event) -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save to Excel");
-            fileChooser.setInitialFileName("Supplier.xlsx");
+            fileChooser.setInitialFileName(this.getClass().getSimpleName()+".xlsx");
             fileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter("Excel", "*.xlsx"),
             new FileChooser.ExtensionFilter("All Files", "*.*"));
@@ -103,8 +128,8 @@ public class SupplierController extends Controller {
                         file_xls = new File(file_xls.getParent() + "/" + filename);
                     }
                     Map<String, List<DataRow>> excelMap = new HashMap<>();
-                    excelMap.put("SupplierArticles", tdArticle.getDataForExcel());
-                    excelMap.put("Info", tdInfo.getDataForExcel());
+                    excelMap.put("SupplierArticles", tdMySql.getDataForExcel());
+                    excelMap.put("Info", tdAll.getDataForExcel());
 
                     save2Excel(file_xls.getAbsolutePath(), excelMap);
 
@@ -117,18 +142,73 @@ public class SupplierController extends Controller {
 
         suppBtn.setOnAction((event) -> {
             try {
-                tdInfo.clear();
-                tdArticle.clear();
+                tdAll.clear();
+                tdMySql.clear();
+                tdOracle.clear();
+                tdSqlite.clear();
                 String supp_str = suppInputField.getText();
                 if (supp_str.matches("[\\d]+")) {
-
-                    String StoreUrl = ini.getParam("CONNECTIONS", "StoreUrl");
                     List<SQLThread> threadPool = new ArrayList<>();
-                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierInfo_supp.sql"), supp_str),
-                            StoreUrl, tdInfo, semaphore, "SupplierInfo_Thread"));
+                    // Connections block
+                    String OracleUrl = ini.getParam("CONNECTIONS", "OracleUrl");
+                    String OracleName = ini.getParam("CONNECTIONS", "OracleName");
+                    String OraclePassword = ini.getParam("CONNECTIONS", "OraclePassword");
+                    String MySqlUrl = ini.getParam("CONNECTIONS", "MySqlUrl");
+                    String MySqlName = ini.getParam("CONNECTIONS", "MySqlName");
+                    String MySqlPassword = ini.getParam("CONNECTIONS", "MySqlPassword");
+                    String SqliteUrl = ini.getParam("CONNECTIONS", "SqliteUrl");
 
-                    threadPool.add(new SQLThread(MessageFormat.format(getSQLFromFile("SupplierArts.sql"), supp_str),
-                            StoreUrl, tdArticle, semaphore,"SupplierArts_Thread"));
+
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("1_MySql.sql"),
+                            MySqlUrl,
+                            MySqlName,
+                            MySqlPassword,
+                            tdMySql,
+                            semaphore,
+                            "MySQL_Thread"));
+
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("2_OracleSQL.sql"),
+                            OracleUrl,
+                            OracleName,
+                            OraclePassword,
+                            tdOracle,
+                            semaphore,
+                            "Oracle_Thread"));
+
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("3_SqliteSQL.sql"),
+                            SqliteUrl,
+                            tdSqlite,
+                            semaphore,
+                            "Sqlite_Thread"));
+
+                    //ALL TAB ADD INFO
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("1_MySql.sql"),
+                            MySqlUrl,
+                            MySqlName,
+                            MySqlPassword,
+                            tdAll,
+                            semaphore,
+                            "MySQL_Thread"));
+
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("2_OracleSQL.sql"),
+                            OracleUrl,
+                            OracleName,
+                            OraclePassword,
+                            tdAll,
+                            semaphore,
+                            "Oracle_Thread"));
+
+                    threadPool.add(new SQLThread(
+                            getSQLFromFile("3_SqliteSQL.sql"),
+                            SqliteUrl,
+                            tdAll,
+                            semaphore,
+                            "Sqlite_Thread"));
 
                     new Thread(() -> {
                         long startTime = System.currentTimeMillis();
@@ -152,7 +232,7 @@ public class SupplierController extends Controller {
                         }
                         Platform.runLater(() -> {
                             suppInputField.setStyle("-fx-control-inner-background: lime");
-                            if (tdInfo.getTableData().size() == 0) {
+                            if (tdAll.getTableData().size() == 0) {
                                 suppInputField.setStyle("-fx-control-inner-background: yellow");
                             }
                             long stopTime = System.currentTimeMillis();
