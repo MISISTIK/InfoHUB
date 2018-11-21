@@ -1,22 +1,21 @@
 package itea.project.utils;
 
-import itea.project.MainApp;
 import javafx.application.Platform;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static itea.project.utils.FxUtils.alertError;
 import static itea.project.MainApp.LOGGER;
+import static itea.project.utils.FxUtils.alertError;
 import static itea.project.utils.Utils.extractJarResFolder;
-import static itea.project.utils.Utils.listResFolder;
 
 //realizes the Singleton pattern
 public class Ini4J {
@@ -35,6 +34,36 @@ public class Ini4J {
             alertError(e);
             Platform.exit();
         }
+    }
+
+    public synchronized List<String> getSectionKeys(String section) {
+        List<String> list = new ArrayList<>();
+        if (ini != null) {
+            if (ini.containsKey(section)) {
+                list.addAll(ini.get(section).keySet());
+            } else {
+                alertError(new Exception("No such SECTION \"" + section + "\" in INI file"));
+            }
+        } else {
+            alertError(new Exception("The INI instance was not initialized (= NULL) "));
+            Platform.exit();
+        }
+        return list;
+    }
+
+    public synchronized List<String> getSectionValues(String section) {
+        List<String> list = new ArrayList<>();
+        if (ini != null) {
+            if (ini.containsKey(section)) {
+                list.addAll(ini.get(section).values());
+            } else {
+                alertError(new Exception("No such SECTION \"" + section + "\" in INI file"));
+            }
+        } else {
+            alertError(new Exception("The INI instance was not initialized (= NULL) "));
+            Platform.exit();
+        }
+        return list;
     }
 
     public synchronized static Ini4J getInstance() {

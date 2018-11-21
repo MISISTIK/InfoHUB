@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 
+import static itea.project.utils.FxUtils.alertError;
 import static itea.project.utils.FxUtils.getStackTrace;
 import static itea.project.utils.Utils.*;
 
@@ -45,6 +46,9 @@ public class MainApp extends Application {
         isAppInit = true;
         checkSQLFolder("SQL_res",ini.getParam("ROOT","SqlFolderName"));
         try {
+            for (String driver : ini.getSectionValues("DRIVERS")) {
+                Class.forName(driver);
+            }
             //for dev use
             if (isDev) {
                 String file_str = "file://" + (System.getProperty("os.name").contains("Windows") ? "/" : "");
@@ -81,7 +85,7 @@ public class MainApp extends Application {
                 primaryStage.setHeight(primaryStage.getHeight()+1);
             });
 
-            primaryStage.setTitle("InfoHUB");
+            primaryStage.setTitle("InfoHUB v1.1");
             primaryStage.getIcons().add(new Image("/img/favicon.png"));
             primaryStage.setScene(new Scene(root));
             primaryStage.setResizable(true);
