@@ -5,3 +5,5 @@ javafx.version: [$javafxVersion]
 
 Good Log4J information
 https://stackoverflow.com/a/46368163/10299636
+
+install maven jar:
